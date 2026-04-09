@@ -40,7 +40,7 @@ class AgentRouter:
         with open(self.registry_path, 'w') as f:
             json.dump(data, f, indent=2)
 
-    def route(self, intent_query: str) -> List[Dict[str, Any]]:
+    def route(self, intent_query: str, force_model: Optional[str] = None, use_moe: bool = False) -> List[Dict[str, Any]]:
         """
         Maps an intent query to the best available tools and models.
         Returns a ranked list of capabilities with model recommendations.
@@ -54,6 +54,10 @@ class AgentRouter:
         # High-reasoning keywords trigger high-fidelity model recommendations
         reasoning_keywords = {"analyze", "review", "refactor", "architect", "complex", "debug"}
         needs_high_fidelity = any(word in query_words for word in reasoning_keywords)
+        
+        # Offline keywords trigger local/offline model recommendations
+        offline_keywords = {"offline", "off-line", "local", "airgapped", "gemma", "gemma-4"}
+        needs_offline = any(word in query_words for word in offline_keywords)
 
         for entry in data["routing_table"]:
             intent_words = set(entry["intent"].lower().split())
@@ -68,14 +72,25 @@ class AgentRouter:
             if final_score > 0:
                 # Override preferred model if high-fidelity is needed and not already set
                 recommended_model = entry.get("preferred_model")
-                if needs_high_fidelity and recommended_model == "gemini-2.0-flash":
+                if needs_offline:
+                    recommended_model = "gemma-4" # Support for offline LLM execution
+                elif needs_high_fidelity and recommended_model == "gemini-2.0-flash":
                     recommended_model = "claude-3-5-sonnet-v2" # Upgrade for complex tasks
 
-                scored_results.append({
+                if force_model:
+                    recommended_model = force_model
+                
+                result_entry = {
                     **entry,
                     "match_score": round(final_score, 2),
                     "recommended_model": recommended_model
-                })
+                }
+                
+                if use_moe and not force_model:
+                    # Provide a mixture of experts array alongside the baseline recommendation
+                    result_entry["moe_models"] = ["claude-3-5-sonnet-v2", "gemini-2.0-flash", "gemini-2.5-pro", "gemma-4"]
+
+                scored_results.append(result_entry)
         
         # Sort by match_score descending
         scored_results.sort(key=lambda x: x["match_score"], reverse=True)

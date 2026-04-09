@@ -1,0 +1,47 @@
+=========================================
+EXPERIMENT 1: Pass-Through Routing (Opus 4.6)
+=========================================
+{
+  "intent": "run test verify application",
+  "tool_name": "mcp_verifier",
+  "path": "/usr/bin/verifier",
+  "wc_score": 0.8,
+  "preferred_model": "gemini-2.0-flash",
+  "metadata": {},
+  "match_score": 0.8,
+  "recommended_model": "opus 4.6"
+}
+
+=========================================
+EXPERIMENT 2: Offline / Airgapped Trigger (Gemma 4)
+=========================================
+{
+  "intent": "run test verify application",
+  "tool_name": "mcp_verifier",
+  "path": "/usr/bin/verifier",
+  "wc_score": 0.8,
+  "preferred_model": "gemini-2.0-flash",
+  "metadata": {},
+  "match_score": 0.8,
+  "recommended_model": "gemma-4"
+}
+
+=========================================
+EXPERIMENT 3: Mixture of Experts (MoE)
+=========================================
+{
+  "intent": "text processing",
+  "tool_name": "text_tool",
+  "path": "/path/tool",
+  "wc_score": 1.0,
+  "preferred_model": "gemini-2.0-flash",
+  "metadata": {},
+  "match_score": 1.0,
+  "recommended_model": "gemini-2.0-flash",
+  "moe_models": [
+    "claude-3-5-sonnet-v2",
+    "gemini-2.0-flash",
+    "gemini-2.5-pro",
+    "gemma-4"
+  ]
+}
