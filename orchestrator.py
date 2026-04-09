@@ -1,9 +1,9 @@
 import logging
 from typing import Optional, List, Dict, Any
-from aether.core.headless_runner import HeadlessGeminiRunner
-from aether.core.toolsmith import Toolsmith
-from aether.memory.context_buffer import ContextBuffer
-from aether.evals.judge_scoring import Judge
+from core.headless_runner import HeadlessGeminiRunner
+from core.toolsmith import Toolsmith
+from memory.context_buffer import ContextBuffer
+from evals.judge_scoring import Judge
 
 class AetherOrchestrator:
     """

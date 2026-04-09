@@ -13,9 +13,9 @@ import shutil
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from mcp.server.fastmcp import FastMCP, Context
-from aether.core.toolsmith import Toolsmith
-from aether.core.headless_runner import HeadlessGeminiRunner
-from aether.core.router import AgentRouter
+from core.toolsmith import Toolsmith
+from core.headless_runner import HeadlessGeminiRunner
+from core.router import AgentRouter
 
 # Initialize FastMCP server
 mcp = FastMCP("toolsmith_mcp")
@@ -87,6 +87,7 @@ class RegisterInput(BaseModel):
     tool_name: str = Field(..., description="Name of the tool.")
     path: str = Field(..., description="Absolute path to the tool script.")
     wc_score: float = Field(1.0, description="Worker Capability (WC) score (0.0 to 1.0).")
+    preferred_model: Optional[str] = Field(None, description="The preferred model for this skill (e.g., claude-3-5-sonnet-v2).")
 
 class RouteInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -140,9 +141,15 @@ async def toolsmith_execute(params: ExecuteInput) -> str:
 
 @mcp.tool(name="router_register")
 async def router_register(params: RegisterInput) -> str:
-    """Registers a tool with the Agent Router's high-bandwidth dispatcher."""
-    router.register_tool(params.intent, params.tool_name, params.path, score=params.wc_score)
-    return f"Tool {params.tool_name} registered for intent '{params.intent}' with WC score {params.wc_score}."
+    """Registers a tool with the Agent Router's high-bandwidth dispatcher with model-skill optimization."""
+    router.register_tool(
+        params.intent, 
+        params.tool_name, 
+        params.path, 
+        score=params.wc_score,
+        preferred_model=params.preferred_model
+    )
+    return f"Tool {params.tool_name} registered for intent '{params.intent}' with WC score {params.wc_score} (Preferred Model: {params.preferred_model or 'Default'})."
 
 @mcp.tool(name="router_route")
 async def router_route(params: RouteInput) -> str:

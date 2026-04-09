@@ -1,36 +1,61 @@
-# Aether Agent Orchestration
+# Aether Agent Orchestration: The SCION-Router Pattern
 
-This document outlines the agent hierarchy and orchestration patterns for the Aether ecosystem.
+Project Aether utilizes a high-bandwidth, hierarchical orchestration pattern designed for autonomous evolution and high-fidelity execution.
 
-## Orchestration Pattern: SCION (Supervisor-Worker)
+## 🏛️ Architectural Hierarchy
 
-Aether uses the SCION pattern to manage complexity. The **Aether Supervisor** acts as the central orchestrator, delegating specialized tasks to **Workers**.
+### 1. The Control Plane (The Brain)
+The Control Plane is responsible for mission logic, goal decomposition, and swarm management.
 
-### Aether Supervisor
-- **Role**: Central intelligence and task delegator.
-- **Key Tools**: `transfer_to_agent`.
-- **Primary Responsibility**: Decomposing user requests and monitoring worker execution.
+#### **Aether Supervisor**
+- **Role**: Central Orchestrator.
+- **Responsibility**: Decomposes complex user requests into atomic tasks. It monitors worker progress and performs final synthesis of results.
+- **Key Pattern**: SCION (Supervisor-Worker).
 
-### Specialized Workers
+#### **Agent Router**
+- **Role**: High-Speed Dispatcher.
+- **Responsibility**: Maps semantic intent to the optimal worker path in milliseconds. It uses **Worker Capability (WC) Scores** to rank available tools and agents.
+- **Tool**: `core/router.py`.
 
-#### Aether Toolsmith
-- **Role**: Dynamic skill synthesis and tool development.
-- **Key Tools**: `write_file` (Write), `run_shell_command` (Bash).
-- **Primary Responsibility**: Building and testing new capabilities for the ecosystem.
+### 2. The Execution Plane (The Swarm)
+The Execution Plane consists of specialized workers that perform technical tasks. All workers are exposed via the **Model Context Protocol (MCP)**.
 
-#### Aether Reflection Agent (The Mirror)
-- **Role**: Performance reflection and steering directive synthesis.
-- **Key Tools**: `bigquery_query`.
-- **Primary Responsibility**: Analyzing low-performing traces and human feedback to guide Adversarial Debaters.
+#### **Toolsmith (Worker)**
+- **Role**: Dynamic Capability Synthesis.
+- **Responsibility**: Identifies capability gaps and autonomously generates new Python tools or MCP servers to fill them.
+- **Server**: `toolsmith_mcp_server.py`.
 
-#### Worker Template
-- **Role**: Blueprint for new specialized agents.
-- **Primary Responsibility**: Providing a consistent structure for domain-specific workers.
+#### **Claude Vertex MCP (Worker)**
+- **Role**: High-Fidelity Reasoning.
+- **Responsibility**: Performs deep architectural analysis and complex code drafting using Claude 3.5 Sonnet on Vertex AI.
+- **Server**: `claude_vertex_mcp.py`.
 
-## Delegation Workflow
+#### **Reflection Agent (Worker)**
+- **Role**: Evolutionary Analysis.
+- **Responsibility**: Reviews performance traces and suggests optimizations for agent instructions and tools.
 
-1. **User Request**: The user interacts with the system.
-2. **Supervisor Analysis**: The Aether Supervisor analyzes the request.
-3. **Task Decomposition**: The Supervisor breaks the request into sub-tasks.
-4. **Worker Delegation**: The Supervisor uses `transfer_to_agent` to hand off tasks to specialized workers.
-5. **Synthesis**: The Supervisor collects and integrates results for the final response.
+## 📡 Communication: Model Context Protocol (MCP)
+
+Aether uses MCP as the primary interface between the Control and Execution planes. This allows for:
+- **Decoupled Scaling**: Workers can run as serverless Cloud Run services while the Supervisor remains centralized.
+- **Dynamic Discovery**: The Supervisor can discover new tools synthesized by the Toolsmith on-the-fly.
+- **Standardized Intent**: Intent queries are semantically routed to the best-fit capability.
+
+## 📊 Worker Capability (WC) Scores
+
+Every tool and agent in the Aether swarm is assigned a **WC Score (0.0 - 1.0)**.
+- **1.0**: Gold standard, verified specialist.
+- **0.5**: Experimental or synthesized tool.
+- **0.0**: Deprecated or failed capability.
+
+The Agent Router combines the WC Score with semantic relevance to calculate the final **Match Score**, ensuring the most reliable specialist is always selected.
+
+## 🧠 Model-Skill Optimization
+
+Aether autonomously selects the optimal reasoning engine for every task:
+- **Fast Execution**: Tasks like basic tool synthesis or file operations default to `gemini-2.0-flash`.
+- **High-Fidelity Reasoning**: Complex tasks involving architectural review, deep debugging, or security analysis trigger an automatic upgrade to `claude-3-5-sonnet-v2`.
+
+The Router implements a **Keyword-Triggered Upgrade** strategy:
+- **Keywords**: `analyze`, `review`, `refactor`, `architect`, `complex`, `debug`.
+- **Logic**: If an intent query contains a reasoning keyword, the Router overrides the default worker model with a high-fidelity recommendation.

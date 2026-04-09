@@ -2,7 +2,7 @@ import os
 import subprocess
 import logging
 from typing import Dict, Any, Optional
-from aether.core.headless_runner import HeadlessGeminiRunner
+from core.headless_runner import HeadlessGeminiRunner
 
 class Toolsmith:
     """

@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Any, Optional
-from aether.core.headless_runner import HeadlessGeminiRunner
+from core.headless_runner import HeadlessGeminiRunner
 
 class EvolutionEngine:
     """

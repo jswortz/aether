@@ -1,6 +1,6 @@
 import unittest
 import time
-from aether.memory.context_buffer import ContextBuffer, ActiveAttentionFilter, ContextItem
+from memory.context_buffer import ContextBuffer, ActiveAttentionFilter, ContextItem
 
 class TestContextBuffer(unittest.TestCase):
 
