@@ -1,0 +1,28 @@
+{
+  "run_id": "run_20260409_213241_8c0440",
+  "timestamp": "2026-04-09T21:34:34.753692",
+  "vlm_provider": "gemini",
+  "vlm_model": "gemini-3-flash-preview",
+  "image_provider": "google_imagen",
+  "image_model": "gemini-3-pro-image-preview",
+  "refinement_iterations": 1,
+  "seed": null,
+  "config_snapshot": {
+    "vlm_provider": "gemini",
+    "vlm_model": "gemini-3-flash-preview",
+    "image_provider": "google_imagen",
+    "image_model": "gemini-3-pro-image-preview",
+    "num_retrieval_examples": 10,
+    "refinement_iterations": 3,
+    "output_resolution": "2k",
+    "reference_set_path": "data/reference_sets",
+    "guidelines_path": "data/guidelines",
+    "output_dir": "/usr/local/google/home/jwortz/aether/assets",
+    "save_iterations": true,
+    "openrouter_api_key": null,
+    "google_genai_use_vertexai": true,
+    "google_cloud_project": "wortz-project-352116",
+    "google_cloud_location": "us-east1",
+    "skip_ssl_verification": false
+  }
+}

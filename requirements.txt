@@ -1,0 +1,9 @@
+mcp
+fastmcp
+pydantic
+google-cloud-aiplatform[agent_engines,adk]
+python-dotenv
+rich
+typer
+uvicorn
+fastapi
