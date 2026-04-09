@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Action Shooter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #333;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #0f0;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+    <h1>AETHER ACTION SHOOTER</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div class="controls">
+        <button onclick="saveGame()">SAVE STATE (GAS TOWN)</button>
+        <button onclick="loadGame()">LOAD STATE (GAS TOWN)</button>
+        <button onclick="location.reload()">RESTART</button>
+    </div>
+
+    <script src="/static/game_logic.js"></script>
+    <script>
+        const engine = new GameEngine('gameCanvas');
+        engine.loop();
+
+        async function saveGame() {
+            const state = engine.getState();
+            const response = await fetch('/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+            const result = await response.json();
+            console.log('Save result:', result);
+            alert('Game state saved to Gas Town!');
+        }
+
+        async function loadGame() {
+            const response = await fetch('/load');
+            const state = await response.json();
+            if (state) {
+                engine.setState(state);
+                console.log('State loaded:', state);
+                alert('Game state resurrected from Gas Town!');
+            } else {
+                alert('No saved state found.');
+            }
+        }
+    </script>
+</body>
+</html>

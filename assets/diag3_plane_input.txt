@@ -1,0 +1,21 @@
+# All-In-One MCP Orchestration Plane
+Separation of Control Plane and Execution Plane
+
+1. Control Plane (Persistent):
+   - Aether Supervisor: High-level orchestration.
+   - Aether Router: Routes requests to specific workers.
+   - Provisioning Tool (MCP): Tool used by Supervisor to spawn workers.
+
+2. Execution Plane (Ephemeral):
+   - Cloud Run Worker 1: Ephemeral container running an MCP server.
+   - Cloud Run Worker N: Additional workers scaled on demand.
+
+3. Connectivity:
+   - SSE Transport: Server-Sent Events used for real-time communication between Control Plane and Execution Plane.
+
+Visual Guide:
+- Draw a horizontal line separating "Control Plane" (Top) and "Execution Plane" (Bottom).
+- Control Plane components are inside a blue-shaded region.
+- Execution Plane components are inside a green-shaded region.
+- Provisioning Tool has a "Spawn" arrow pointing down to Cloud Run Workers.
+- Dual-headed arrows labeled "SSE" connect Router to Workers.

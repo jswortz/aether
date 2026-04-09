@@ -1,0 +1,34 @@
+Diagram Title: Project Aether - All-In-One MCP Orchestration Plane
+
+Core Architecture Components:
+
+1. User/Client:
+   - Represents the entry point for tasks and prompts.
+   - Connected to the Control Plane.
+
+2. Control Plane (Persistent Infrastructure):
+   - Aether Supervisor: The central orchestrator managing state, task decomposition, and overall lifecycle.
+   - Intelligent Router: Logic for selecting the correct tool or worker based on the request context.
+   - These components reside within a persistent, high-availability environment.
+
+3. MCP Provisioning Interface:
+   - MCP Provisioning Tool: A standardized Model Context Protocol tool that abstracts infrastructure management.
+   - Role: Receives instructions from the Supervisor to spin up or tear down execution resources.
+
+4. Execution Layer (Ephemeral Infrastructure):
+   - Cloud Run Workers: Isolated, on-demand containers (e.g., Worker A, Worker B).
+   - These are ephemeral and only exist for the duration of the task.
+
+Data Flows and Connectivity:
+- Step 1: User sends a Task Request to the Aether Supervisor.
+- Step 2: Supervisor queries the Intelligent Router for the best execution path.
+- Step 3: Supervisor calls the MCP Provisioning Tool to deploy a specific worker.
+- Step 4: MCP Tool triggers deployment of an Ephemeral Cloud Run Worker.
+- Step 5: Aether Supervisor establishes an SSE (Server-Sent Events) Transport connection to the Cloud Run Worker for real-time, streaming communication.
+- Step 6: Worker returns results/streams output back to the Supervisor via SSE.
+
+Visual Emphasis:
+- Clearly separate the 'Control Plane' (Persistent) from the 'Execution Layer' (Ephemeral).
+- Highlight the 'MCP Provisioning Tool' as the bridge between management and execution.
+- Use a distinct line style (e.g., dashed or glowing) for the SSE Stream to signify real-time data flow.
+- Ensure the diagram looks professional, high-resolution, and suitable for technical documentation.

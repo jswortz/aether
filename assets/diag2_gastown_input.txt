@@ -1,0 +1,16 @@
+# Gas Town Continuous Persistence Engine
+Inspired by Steve Yegge's Gas Town
+
+1. Epoch Controller: Manages system state across discrete time intervals (Epochs).
+2. MCP Workers (The Swarm): Transient agents performing work during an Epoch.
+3. Eval Gates: Strict quality filters that must be passed before state persistence.
+4. GCS Checkpointing: Periodically saves the entire system memory and state to Google Cloud Storage.
+5. Resurrection Protocol (The Prodder): Monitors for system crashes; reloads the last GCS checkpoint and restarts the Epoch Controller.
+
+Layout:
+- Epoch Controller at the center.
+- MCP Workers feed into Eval Gates.
+- Eval Gates feed into GCS Checkpointing.
+- The Prodder watches the Epoch Controller and GCS.
+
+Note: Continuous state persistence ensures the Aether swarm never loses its "memory" even across restarts.

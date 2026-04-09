@@ -1,28 +1,47 @@
-# 🪐 Project Aether: Autonomous SCION-Router Swarm
+# 🪐 Project Aether: The SCION-MCP Orchestration Swarm
 
 **STOP CHATTING. START ORCHESTRATING.**
 
-Aether is a next-generation agentic framework designed for high-stakes, multi-step autonomous work. It moves beyond the "helpful assistant" paradigm to a clinical, goal-oriented execution engine that identifies its own capability gaps and evolves its own toolset.
+Aether is a next-generation agentic framework designed for high-stakes, multi-step autonomous work. Inspired by Steve Yegge's vision of ["Gas Town"](https://steve-yegge.medium.com/welcome-to-gas-town-24ca60d29f86), Aether operates as a persistent, autonomous factory that evolves its own capabilities and optimizes its own performance.
 
-## 🚀 Practical Utility: What does Aether actually do?
+## 🏛️ The Aether Architecture
 
-Aether is an **autonomous builder** and **orchestrator**. It is designed to:
-- **Self-Evolve**: Identify missing technical capabilities and synthesize new Python/MCP tools on-the-fly via the **Toolsmith**.
-- **Optimize Model-Skill Selection**: Automatically route tasks to the best model (e.g., Gemini for speed, Claude for reasoning) based on intent and complexity.
-- **Dispatch at Scale**: Route semantic intent to the optimal specialist in milliseconds using a high-bandwidth **Agent Router**.
-- **Serverless Execution**: Run a fleet of specialized workers as serverless **Cloud Run** services.
-- **Protect Context**: Use a **Surprise Gate** to filter noise and ensure only high-signal data enters the reasoning loop.
+Aether strictly separates the **Control Plane** (Strategic Brain) from the **Execution Plane** (Technical Swarm) using the **SCION (Supervisor-Worker)** pattern and **Model Context Protocol (MCP)**.
 
-## 🏛️ Architecture: The SCION-Router Pattern
+### 1. The Orchestration Plane (Control)
+The centralized Management layer that handles mission-level logic, decomposition, and routing.
+- **[ORCHESTRATION_PLANE.md](docs/ORCHESTRATION_PLANE.md)**: Deep dive into the Master-Worker architecture.
+- **Agent Router**: A high-bandwidth dispatcher that maps semantic intent to optimal worker capability scores.
+- **Aetherial Memory**: Uses a **Surprise Gate** to protect the reasoning loop from context poisoning.
 
-Aether strictly separates the **Control Plane** (Brain) from the **Execution Plane** (Swarm):
+### 2. The Execution Plane (Workers)
+A decentralized fleet of specialists running as serverless **Cloud Run** containers.
+- **Toolsmith**: Autonomously synthesizes and registers new tools on-the-fly.
+- **Specialists**: High-fidelity reasoning workers (e.g., Claude 3.5 Sonnet on Vertex AI) for deep architectural work.
+- **Isolation**: Workers are sandboxed and communicate via **MCP over SSE**, ensuring a secure and scalable execution environment.
 
-- **Control Plane (Supervisor/Router)**: Centralized management of mission goals, intent routing, and Aetherial Memory.
-- **Execution Plane (MCP Workers)**: A decentralized swarm of specialists (Toolsmith, Claude Vertex, Reflection Agents) running in isolated containers.
+## 🚀 Advanced Patterns
 
-For a deep dive, see **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** and **[AGENTS.md](AGENTS.md)**.
+### ⛽ Gas Town Persistence (Continuous Engine)
+Inspired by Steve Yegge's ["Welcome to Gas Town"](https://steve-yegge.medium.com/welcome-to-gas-town-24ca60d29f86), Aether is a high-throughput factory of intent. It achieves "immortality" through a protocol of **Micro-Epoch Gating** and **GCS Checkpointing**. The engine serializes its state after every unit of work, allowing for seamless resurrection if an instance is terminated.
 
-## 🛠️ Installation
+### 🔄 Ubiquitous Self-Optimization (Self-Optimizing Evals)
+Every execution trace is a signal. Aether uses **LLM-as-a-Judge** and the **RAGAS** framework to audit its own performance. If a **Worker Capability (WC)** score falls below a threshold, the swarm autonomously triggers a **Reflection Agent** and **Toolsmith** to refactor the failing prompt or code.
+
+### 🏹 All-In-One Orchestration Plane
+Aether acts as a centralized master service on Cloud Run that dynamically provisions and manages ephemeral SCION worker instances. It separates the **Control Plane** from the **Execution Plane** via **MCP over SSE**, ensuring a high-scale, decoupled technical swarm.
+
+## 🎮 E2E Test: Aether Action Shooter
+To verify the framework, Aether was tasked with autonomously building a "slick action top-down shooter."
+- **Result**: A fully functional FastAPI/JS Canvas game featuring **Gas Town Persistence** (save/load state to GCS) and NPC AI logic synthesized by the **Toolsmith**.
+- **Location**: See the `e2e_game/` directory for the code, Dockerfile, and deployment scripts.
+
+## 📊 Visualizing the Swarm
+
+- **[Architecture Diagram](assets/aether_swarm_architecture.png)**: Visualizing the Control vs. Execution plane separation.
+- **[SCION Handoff Protocol](docs/assets/scion_handoff_protocol.png)**: Detailed logic of the Supervisor-Worker interaction.
+
+## 🛠️ Getting Started
 
 ### 1. Local Setup
 ```bash
@@ -36,62 +55,17 @@ export GITHUB_TOKEN=your_token
 export GOOGLE_CLOUD_PROJECT=your_project
 ```
 
-### 2. Cloud Run Deployment (Serverless Swarm)
-Deploy the entire execution plane with one command:
+### 2. Deploy the Swarm
+Deploy the execution plane to Google Cloud Run:
 ```bash
 bash scripts/deploy_cloud_run.sh
 ```
 
 ## 🎯 Core Use Cases
 
-### 1. Autonomous Bug Fixing
-The Supervisor identifies a failure, the **Model-Skill Router** upgrades the task to `claude-3-5-sonnet` for its high-fidelity reasoning, and the worker invokes `claude code` to refactor the fix.
-
-### 2. Dynamic Skill Expansion
-When Aether needs a specialized tool (e.g., a BigQuery complexity analyzer), the **Toolsmith** synthesizes the script, tests it in a sandbox, and registers it with the Router for immediate use.
-
-### 3. High-Fidelity Architectural Review
-By using **Adversarial Debaters** (Proponent/Critic), Aether subjects every architectural proposal to rigorous peer review before finalization.
-
-## 📖 Instructions & Examples
-
-### Registering a Tool with Model-Skill Optimization
-```python
-from core.router import AgentRouter
-
-router = AgentRouter()
-router.register_tool(
-    intent="architectural review",
-    tool_name="architect",
-    path="/app/tools/architect.py",
-    score=1.0,
-    preferred_model="claude-3-5-sonnet-v2" # Explicit high-fidelity request
-)
-```
-
-### Routing an Intent (Auto-Upgrade Logic)
-```python
-# Aether detects "analyze" and automatically recommends a high-reasoning model
-results = router.route("analyze the security of this protocol")
-# results[0]["recommended_model"] -> "claude-3-5-sonnet-v2"
-```
-
-### Starting the Toolsmith MCP
-```bash
-export MCP_TRANSPORT=sse
-python3 toolsmith_mcp_server.py
-```
-
-## 🧪 Testing & Verification
-Aether includes a rigorous test suite to ensure technical integrity:
-```bash
-# Run core logic and routing tests
-pytest tests/test_aether_core.py
-pytest tests/test_model_skill_routing.py
-
-# Verify GCP model connectivity (requires GOOGLE_CLOUD_PROJECT)
-pytest tests/test_model_connectivity.py
-```
+- **Autonomous Capability Synthesis**: The Toolsmith identifies a gap and builds the tool to fill it.
+- **High-Fidelity Debugging**: Automatic model-upgrade for complex architectural failures.
+- **Adversarial Peer Review**: Using **Debaters** (Proponent/Critic) to ensure rigorous solution design.
 
 ---
 **Build for the swarm. Trust the evolution. Welcome to Aether.**

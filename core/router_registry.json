@@ -1,3 +1,28 @@
 {
-  "routing_table": []
+  "routing_table": [
+    {
+      "intent": "text processing",
+      "tool_name": "text_tool",
+      "path": "/path/tool",
+      "wc_score": 1.0,
+      "preferred_model": "gemini-2.0-flash",
+      "metadata": {}
+    },
+    {
+      "intent": "text processing data transformation",
+      "tool_name": "mcp_transformer",
+      "path": "/usr/bin/transformer",
+      "wc_score": 1.0,
+      "preferred_model": "gemini-2.0-flash",
+      "metadata": {}
+    },
+    {
+      "intent": "run test verify application",
+      "tool_name": "mcp_verifier",
+      "path": "/usr/bin/verifier",
+      "wc_score": 0.8,
+      "preferred_model": "gemini-2.0-flash",
+      "metadata": {}
+    }
+  ]
 }

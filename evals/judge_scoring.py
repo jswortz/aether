@@ -147,7 +147,48 @@ class Judge:
         denominator = max(len(actual_calls), len(expected_calls))
         return correct_calls / denominator
 
+    def validate_worker_competency(self, skill_name: str, test_cases: List[Dict[str, str]], threshold: float = 4.0) -> bool:
+        """
+        Mandates evaluations for a specific skill/worker.
+        Triggers Toolsmith if scores fall below the strict threshold.
+        Acts as the universal gating mechanism for Aether.
+        """
+        self.logger.info(f"Starting mandatory competency evaluation for: {skill_name}")
+        scores = []
+
+        for case in test_cases:
+            query = case["query"]
+            reference = case["reference"]
+            
+            # Execute the skill via the runner
+            try:
+                output = self.runner.execute_task(f"Use skill {skill_name} to: {query}")
+                result = self.score_output(query, output, reference)
+                score = result.get("score", 0)
+                scores.append(score)
+                self.logger.info(f"Test case score: {score} - {result.get('reasoning')}")
+            except Exception as e:
+                self.logger.error(f"Error evaluating test case: {e}")
+                scores.append(0)
+
+        avg_score = sum(scores) / len(scores) if scores else 0
+        self.logger.info(f"Average competency score for {skill_name}: {avg_score}")
+
+        if avg_score < threshold:
+            self.logger.warning(f"CRITICAL: Competency for {skill_name} ({avg_score}) fell below threshold {threshold}.")
+            self.logger.info("Triggering Toolsmith for skill remediation...")
+            
+            from core.toolsmith import Toolsmith
+            ts = Toolsmith(self.runner)
+            gap_description = f"The skill '{skill_name}' failed competency evaluation with a score of {avg_score}. It needs to be improved to handle: {test_cases[0]['query']}"
+            ts.bridge_gap(gap_description, f"{skill_name}_remediated")
+            return False
+
+        self.logger.info(f"Gating PASSED for {skill_name}.")
+        return True
+
 if __name__ == "__main__":
+
     # Example usage / sanity check
     judge = Judge()
     # print(judge.score_output("Who is the CEO of Google?", "Sundar Pichai", "Sundar Pichai"))

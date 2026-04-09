@@ -1,0 +1,16 @@
+Title: Self-Optimizing SCION-MCP Eval Loop
+Description: Visualize the continuous improvement loop for Project Aether.
+Components:
+- Aether Supervisor [shape: rectangle, color: blue]: Task orchestrator.
+- MCP Worker [shape: rectangle, color: green]: Executes tools and logic.
+- Universal Eval (Judge) [shape: diamond, color: yellow]: Scores outputs (RAGAS/Custom).
+- Reflection Agent [shape: cloud, color: orange]: Analyzes failure patterns.
+- Aether Toolsmith [shape: hexagon, color: purple]: Refactors tools and prompts.
+
+Flow:
+1. Aether Supervisor -> MCP Worker: Delegates Sub-task
+2. MCP Worker -> Universal Eval (Judge): Submits Output
+3. Universal Eval (Judge) -> Reflection Agent: Provides Scores & Feedback
+4. Reflection Agent -> Aether Toolsmith: Signals Optimization Needed
+5. Aether Toolsmith -> MCP Worker: Deploys Refined Tools/Prompts
+6. MCP Worker -> Aether Supervisor: Reports Final Success

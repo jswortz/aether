@@ -5,30 +5,38 @@ Aether is not a chatbot. It is a high-bandwidth, autonomous execution engine des
 
 **STOP CHATTING. START ORCHESTRATING.**
 
-## II. The Five Pillars of Aetherian Philosophy
+## II. The Seven Pillars of Aetherian Philosophy
 
 1. **The Death of the "Helpful Assistant"**: Most agents are designed to be polite, reactive, and verbose. Aether agents are goal-oriented, clinical, and proactive. They assume the mandate of the Supervisor and execute without requiring constant affirmation.
 2. **Autonomous by Default (YOLO)**: Headless execution is the standard. The human is the **System Architect**, defining goals and trajectories, while Aether manages the technical execution.
 3. **Instructions as Code**: "Prompts" do not exist. There are only **Instructions**, which are treated as high-level code subject to linting (The Judge), refactoring (The Debaters), and optimization (The Compressor).
 4. **The Toolsmith is the Future**: Intelligence that cannot expand its own reach is merely a database. Aether identifies capability gaps and synthesizes its own tools on-the-fly.
-5. **Memory is Attention (Aetherial Memory)**: Aether uses **Active Attention Filtering** to inject only high-signal context into the reasoning loop. This architecture employs a **Surprise Gate** to manage unexpected or conflicting entries. By utilizing **Temporal Validity** (valid_from/valid_to) and **Atomic Deduplication**, Aether ensures that the reasoning window remains a clean-room environment, shunting divergent data to an adversarial reflection buffer to prevent context poisoning and stale-fact hallucinations.
+5. **Memory is Attention (Aetherial Memory)**: Aether uses **Active Attention Filtering** to inject only high-signal context into the reasoning loop. This architecture employs the **Surprise Gate** decorator—a high-pass filter that autonomously rejects low-signal "noise" and shunts conflicting data to an adversarial buffer. By utilizing **Temporal Validity** (valid_from/valid_to) and **Atomic Deduplication**, Aether ensures that the reasoning window remains a clean-room environment. Evaluation of this memory layer is grounded in the **RAGAS** (Retrieval-Augmented Generation Assessment) framework to ensure factual consistency and relevance.
+6. **The Continuous Engine (Gas Town)**: Inspired by Steve Yegge’s ["Welcome to Gas Town"](https://steve-yegge.medium.com/welcome-to-gas-town-24ca60d29f86), Aether is a persistent, high-throughput factory of intent. It achieves "immortality" through **Gas Town Persistence**: a protocol of **Micro-Epoch Gating** and **GCS Checkpointing**. Every discrete unit of work is a micro-epoch; upon completion, the entire system state is serialized and persisted to Google Cloud Storage (GCS), allowing the agent to "resurrect" on any instance and resume execution without loss of momentum.
+7. **Ubiquitous Self-Optimization**: Every execution trace is a signal for evolution. Aether does not just perform tasks; it observes its own performance. Through **Reflection Agents** and **Adversarial Debaters**, the swarm identifies low-performing patterns and autonomously refactors its instructions, tools, and routing logic to achieve a state of perpetual refinement.
 
 ## III. The SCION Orchestration Pattern
-Aether operates as an evolving swarm, utilizing specialized patterns to achieve autonomous evolution:
+Aether operates as an evolving swarm, utilizing the **SCION (Supervisor-Controlled Intelligence & Orchestration Network)** pattern to achieve autonomous evolution. This research-backed foundation separates strategic reasoning (Control) from technical execution (Work), ensuring a decoupled and scalable hierarchy.
 
 ### 1. The Toolsmith (Dynamic Synthesis)
 The engine of self-evolution. When a capability gap is identified, the Toolsmith writes, tests, and registers new tools (Python scripts or MCP servers) to fill it. It moves the system from "using tools" to "generating capabilities."
 
-### 2. The Debaters (Adversarial Rigor)
+### 2. The Archive Scribe (Autonomous Distillation)
+The Scribe performs high-density knowledge distillation. It autonomously scans historical logs, traces, and execution data to extract "Architectural Truths," committing them to Aetherial Memory while discarding the ephemeral clutter of the execution process.
+
+### 3. The Sentinel (Continuous Auditing)
+The Sentinel provides a perpetual security layer. It continuously audits the synthesized tools and system configurations produced by the Toolsmith, scanning for vulnerabilities, lateral movement risks, and compliance with the Aether Security Manifesto.
+
+### 4. The Debaters (Adversarial Rigor)
 To eliminate hallucination and single-agent bias, Aether employs a dialectic approach. A **Proponent** proposes a solution, a **Critic** searches for flaws and vulnerabilities, and a **Supervisor** (The Judge) adjudicates the conflict to reach a high-fidelity consensus.
 
-### 3. The Compressor (Information Density)
+### 5. The Compressor (Information Density)
 Context is the primary bottleneck. The Compressor extracts high-signal "Architectural Truths" and discards noise, maintaining infinite perceived context through finite, high-density distillation.
 
-### 4. The Judge & The Prodder
+### 6. The Judge & The Prodder
 The **Judge** provides semantic, rubric-based evaluation. The **Prodder** acts as a watchdog, unblocking stalled agents and ensuring the swarm maintains its proactive momentum.
 
-### 5. The Agent Router (High-Speed Dispatch)
+### 7. The Agent Router (High-Speed Dispatch)
 The Router is the high-bandwidth dispatcher of the SCION swarm. It eliminates the latency of manual delegation by autonomously mapping **Semantic Intent** to **Worker Capability (WC) Scores**. The Router doesn't just "request" a worker; it calculates the optimal execution path in milliseconds, ensuring that tasks are routed to the most efficient specialist based on real-time performance traces and domain-specific probability of success. Routing is not a suggestion—it is an optimized command.
 
 ## IV. Aether ELI5 (Explain Like I'm Five)

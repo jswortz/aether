@@ -1,0 +1,17 @@
+Title: All-In-One MCP Orchestration Plane
+Description: Highlighting the separation between the Control Plane and Execution Plane.
+Groups:
+- Control Plane [color: grey, style: dashed]:
+    - Aether Supervisor: Central brain.
+    - Router: Traffic manager.
+    - MCP Provisioner (Tool): Tool for dynamic scaling.
+- Execution Plane [color: light blue]:
+    - Ephemeral Cloud Run Worker 1: Isolated environment.
+    - Ephemeral Cloud Run Worker 2: Isolated environment.
+    - Ephemeral Cloud Run Worker 3: Isolated environment.
+
+Flow:
+1. Aether Supervisor -> MCP Provisioner (Tool): Requests more capacity
+2. MCP Provisioner (Tool) -> Execution Plane: Provisions Cloud Run instances
+3. Execution Plane <-> Control Plane: SSE Transport (Real-time umbilical cord)
+4. Router -> Execution Plane: Routes specific tool calls

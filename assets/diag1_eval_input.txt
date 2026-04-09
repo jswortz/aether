@@ -1,0 +1,15 @@
+# Self-Optimizing SCION-MCP Eval Loop
+
+1. Aether Supervisor (The Brain): Receives user requests and decomposes them into tasks.
+2. MCP Worker (Specialized Skill): Executes a specific task using a tool (e.g., Python, SQL, Git).
+3. Universal Eval (The Judge): A high-fidelity LLM judge that scores the worker's output against success criteria.
+4. Reflection Agent (The Mirror): Analyzes failures or sub-optimal scores to identify root causes.
+5. Aether Toolsmith (The Architect): Refactors the MCP Worker's code or tool definitions based on reflection.
+6. Feedback Loop: Toolsmith updates the MCP Worker, completing the self-optimization cycle.
+
+Data Flow:
+- Supervisor -> MCP Worker (Task Assignment)
+- MCP Worker -> Universal Eval (Execution Trace)
+- Universal Eval -> Reflection Agent (Scores & Logs)
+- Reflection Agent -> Toolsmith (Optimization Directives)
+- Toolsmith -> MCP Worker (Enhanced Skills)

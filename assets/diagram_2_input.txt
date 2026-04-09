@@ -1,0 +1,16 @@
+Title: Gas Town Continuous Persistence Engine
+Description: Inspired by Steve Yegge's "Gas Town" concept for persistent agentic state.
+Components:
+- Epoch Controller [shape: rectangle, color: teal]: Manages time steps and state progression.
+- MCP Workers [shape: rectangle, color: green, multiple: true]: Fleet of active agents.
+- Eval Gates [shape: diamond, color: yellow]: Quality gates between epochs.
+- GCS Checkpointing [shape: cylinder, color: blue]: Durable state storage in Google Cloud Storage.
+- Resurrection Protocol (The Prodder) [shape: cloud, color: red]: Restarts failed agents/epochs.
+
+Flow:
+1. Epoch Controller -> MCP Workers: Initiates Epoch N
+2. MCP Workers -> GCS Checkpointing: Writes intermediate state
+3. MCP Workers -> Eval Gates: Requests validation
+4. Eval Gates -> Epoch Controller: Approval/Failure Signal
+5. Resurrection Protocol (The Prodder) -> GCS Checkpointing: Reads last good state on failure
+6. Resurrection Protocol (The Prodder) -> Epoch Controller: Triggers state recovery
