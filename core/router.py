@@ -44,6 +44,7 @@ class AgentRouter:
         """
         Maps an intent query to the best available tools and models.
         Returns a ranked list of capabilities with model recommendations.
+        Supports 'Recipe' patterns for complex multi-agent workflows.
         """
         with open(self.registry_path, 'r') as f:
             data = json.load(f)
@@ -51,10 +52,14 @@ class AgentRouter:
         scored_results = []
         query_words = set(intent_query.lower().split())
         
-        # High-reasoning keywords trigger high-fidelity model recommendations
-        reasoning_keywords = {"analyze", "review", "refactor", "architect", "complex", "debug"}
+        # High-reasoning keywords trigger high-fidelity model recommendations or MoE Recipes
+        reasoning_keywords = {"analyze", "review", "refactor", "architect", "complex", "debug", "creative", "architecting", "deep"}
         needs_high_fidelity = any(word in query_words for word in reasoning_keywords)
         
+        # Specific triggers for the High-Temp MoE Recipe
+        moe_triggers = {"creative architecting", "deep debugging", "moe", "mixture of experts"}
+        trigger_moe = any(trigger in intent_query.lower() for trigger in moe_triggers) or use_moe
+
         # Offline keywords trigger local/offline model recommendations
         offline_keywords = {"offline", "off-line", "local", "airgapped", "gemma", "gemma-4"}
         needs_offline = any(word in query_words for word in offline_keywords)
@@ -86,9 +91,12 @@ class AgentRouter:
                     "recommended_model": recommended_model
                 }
                 
-                if use_moe and not force_model:
-                    # Provide a mixture of experts array alongside the baseline recommendation
-                    result_entry["moe_models"] = ["claude-3-5-sonnet-v2", "gemini-2.0-flash", "gemini-2.5-pro", "gemma-4"]
+                # If MoE is triggered, attach the MoE Recipe metadata
+                if trigger_moe:
+                    result_entry["recipe"] = "high_temp_moe"
+                    result_entry["moe_models"] = ["claude-3-5-sonnet-v2", "gemini-2.0-flash", "gemini-2.5-pro"]
+                    if needs_offline:
+                        result_entry["moe_models"].append("gemma-4")
 
                 scored_results.append(result_entry)
         

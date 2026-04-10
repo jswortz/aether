@@ -2,6 +2,8 @@ import logging
 from typing import Optional, List, Dict, Any
 from core.headless_runner import HeadlessGeminiRunner
 from core.toolsmith import Toolsmith
+from core.router import AgentRouter
+from core.recipes import get_recipe
 from memory.context_buffer import ContextBuffer
 from evals.judge_scoring import Judge
 
@@ -15,19 +17,36 @@ class AetherOrchestrator:
         self.logger = logging.getLogger("aether.orchestrator")
         self.runner = HeadlessGeminiRunner()
         self.memory = ContextBuffer()
+        self.router = AgentRouter()
         self.toolsmith = Toolsmith(self.runner)
         self.judge = Judge(self.runner)
         
     def process_request(self, user_query: str) -> str:
         """
-        Processes a user request through the Aether swarm.
+        Processes a user request through the Aether swarm, using the Agent Router
+        to identify the best models, tools, or high-fidelity recipes.
         """
         self.logger.info(f"Processing request: {user_query}")
         
-        # 1. Retrieve relevant memory context
+        # 1. Consult Agent Router for the best path
+        routes = self.router.route(user_query)
+        recipe_name = routes[0].get("recipe") if routes else None
+        
+        # 2. If a first-class Recipe is found, execute it
+        if recipe_name:
+            recipe = get_recipe(recipe_name)
+            if recipe:
+                self.logger.info(f"Executing first-class recipe: {recipe_name}")
+                offline_mode = "offline" in user_query.lower() or "gemma" in user_query.lower()
+                recipe_result = recipe.execute(user_query, offline_mode=offline_mode)
+                response = recipe_result["output"]
+                self.memory.add_memory(f"User: {user_query}\nRecipe [{recipe_name}]: {response}")
+                return response
+
+        # 3. Retrieve relevant memory context for standard execution
         context = self.memory.get_active_context(user_query)
         
-        # 2. Execute via Supervisor Agent
+        # 4. Execute via Supervisor Agent
         # The Supervisor is responsible for breaking down the task 
         # and handing it off to specialized workers or the Toolsmith.
         try:

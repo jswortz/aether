@@ -45,6 +45,18 @@
         "domain": "spy_game",
         "specialty": "strict validation"
       }
-    }
-  ]
-}
+      },
+      {
+      "intent": "creative architecting deep debugging mixture of experts moe",
+      "tool_name": "moe_engine",
+      "path": "/usr/local/google/home/jwortz/aether/core/moe.py",
+      "wc_score": 1.0,
+      "preferred_model": "gemini-2.5-pro",
+      "metadata": {
+        "type": "recipe",
+        "pattern": "High-Temp MoE",
+        "high_temp": 0.9
+      }
+      }
+      ]
+      }

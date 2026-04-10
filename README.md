@@ -99,11 +99,30 @@ Deploy the execution plane to Google Cloud Run:
 bash scripts/deploy_cloud_run.sh
 ```
 
-## 🎯 Core Use Cases
+### 4. Stochastic MoE & High-Temp Creativity
+For tasks requiring maximum creative divergence (e.g., "Deep Debugging"), Aether invokes its **Mixture of Experts (MoE)** engine. 
+- **Moderated Synthesis**: A Moderator agent orchestrates multiple high-temperature (T=0.9) expert completions.
+- **Offline Sovereignty**: Includes the **Gemma-4 Offline Recipe**, allowing for completely local, high-fidelity MoE execution.
 
-- **Autonomous Capability Synthesis**: The Toolsmith identifies a gap and builds the tool to fill it.
-- **High-Fidelity Debugging**: Automatic model-upgrade for complex architectural failures.
-- **Adversarial Peer Review**: Using **Debaters** (Proponent/Critic) to ensure rigorous solution design.
+### 5. Aether-Stats: Experimental Precision
+Aether now includes a specialized **Statistics & Experimental Design** layer (`aether-stats`).
+- **Confidence Intervals**: Uses Bootstrapping and Bayesian Posterior methods to calculate CIs with minimal samples.
+- **Scientific Evolution**: Statistically validates performance improvements before committing them to the swarm's core.
+
+### 6. First-Class Recipes (GKE-Inspired)
+Aether treats complex multi-agent workflows as **Declarative Recipes**.
+- **Workload Manifests**: Similar to GKE, recipes define `metadata`, `spec`, and `status`.
+- **Closed-Loop Reviews**: Every recipe mandates an **Adversarial Review** step, serving as a self-correcting evaluation loop.
+
+### 7. Scheduled Dream Mode
+The swarm improves itself while you sleep.
+- **Idle-Time Reflection**: A locally scheduled (cron) process that analyzes historical traces and runs counterfactual simulations.
+- **Proactive Refinement**: Automatically updates Worker Capability (WC) scores and triggers the Toolsmith to fill newly identified gaps.
+
+## 🎯 Core Use Cases
+...
+- **Sovereign Creative Architecting**: Using the Gemma-4 Offline MoE recipe for sensitive design work.
+- **Statistically Significant Optimization**: Validating a 5% latency reduction using `aether-stats`.
 
 ---
 **Build for the swarm. Trust the evolution. Welcome to Aether.**
