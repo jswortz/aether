@@ -31,19 +31,57 @@ Every execution trace is a signal. Aether uses **LLM-as-a-Judge** and the **RAGA
 ### 🏹 All-In-One Orchestration Plane
 Aether acts as a centralized master service on Cloud Run that dynamically provisions and manages ephemeral SCION worker instances. It separates the **Control Plane** from the **Execution Plane** via **MCP over SSE**, ensuring a high-scale, decoupled technical swarm.
 
-## 🎮 E2E Test: Aether Action Shooter
-To verify the framework, Aether was tasked with autonomously building a "slick action top-down shooter."
-- **Result**: A fully functional FastAPI/JS Canvas game featuring **Gas Town Persistence** (save/load state to GCS) and NPC AI logic synthesized by the **Toolsmith**.
-- **Location**: See the `e2e_game/` directory for the code, Dockerfile, and deployment scripts.
+## 🎮 High-Fidelity Showcases
+
+### 1. Aether Spy Game: Adversarial Swarm
+The ultimate test of Aether's SCION-Router architecture. Interrogate a swarm of adversarial LLMs (The Mole, The Gatekeeper, The Decoy) to find "Spy Secrets."
+- **Adversarial Orchestration**: Uses the **Agent Router** to select the most deceptive model (Claude) for infiltrators and the most clinical model (Gemini) for fact-checkers.
+- **Deception Logic**: Personas utilize **Signal Mimicry** and **Adversarial Shunting** to bypass the **Surprise Gate**.
+- **Location**: See the `spy_game/` directory and `spy_game/cli.py` to start the mission.
+
+### 2. Aether Action Shooter
+A FastAPI/JS Canvas game featuring **Gas Town Persistence** and NPC AI synthesized by the **Toolsmith**.
+
+## 📖 Developer Resources
+
+### [Aether Developer Guide](docs/DEVELOPER_GUIDE.md)
+The definitive guide on building autonomous systems. Learn best practices for:
+- **SCION Decomposition**: Breaking goals into atomic tasks.
+- **Eval-Gated Execution**: Using **RAGAS** and the **Judge** to mandate competency.
+- **Gas Town Persistence**: Achieving "immortality" through GCS checkpointing.
+
+## 🛠️ Installation & Setup Skills
+
+Aether includes specialized **Gemini CLI Skills** to automate your workflow:
+
+### 1. Aether Installation Wizard
+Automatically configures your environment, installs dependencies, and deploys the swarm to Cloud Run.
+```bash
+# Activate in Gemini CLI
+/activate_skill aether-wizard
+```
+
+### 2. Aether Configuration Tool
+A programmatic tool for the LLM to register new capabilities, update WC scores, and optimize model routing on-the-fly.
+```bash
+# Activate in Gemini CLI
+/activate_skill aether-config
+```
 
 ## 📊 Visualizing the Swarm
 
 - **[Architecture Diagram](assets/aether_swarm_architecture.png)**: Visualizing the Control vs. Execution plane separation.
 - **[SCION Handoff Protocol](docs/assets/scion_handoff_protocol.png)**: Detailed logic of the Supervisor-Worker interaction.
+## 🛠️ Installation & Setup
 
-## 🛠️ Getting Started
+### 1. How to use Aether as a Tool
+Project Aether is a high-bandwidth MCP server. You can connect it to **Claude Desktop**, **Gemini CLI**, or any MCP-compatible client to give your LLM autonomous powers.
 
-### 1. Local Setup
+- **[MCP Client Setup Guide](docs/MCP_INSTALLATION.md#5-connecting-to-mcp-clients-how-to-use-as-a-tool)**: Step-by-step instructions for integration.
+
+### 2. Local Setup
+...
+
 ```bash
 # Clone and install
 git clone https://github.com/jswortz/aether.git

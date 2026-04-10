@@ -23,6 +23,28 @@
       "wc_score": 0.8,
       "preferred_model": "gemini-2.0-flash",
       "metadata": {}
+    },
+    {
+      "intent": "deception",
+      "tool_name": "spy_deception_engine",
+      "path": "/dev/null",
+      "wc_score": 1.0,
+      "preferred_model": "claude-3-5-sonnet-v2",
+      "metadata": {
+        "domain": "spy_game",
+        "specialty": "creative lying"
+      }
+    },
+    {
+      "intent": "fact checking",
+      "tool_name": "spy_fact_checker",
+      "path": "/dev/null",
+      "wc_score": 1.0,
+      "preferred_model": "gemini-2.0-flash",
+      "metadata": {
+        "domain": "spy_game",
+        "specialty": "strict validation"
+      }
     }
   ]
 }

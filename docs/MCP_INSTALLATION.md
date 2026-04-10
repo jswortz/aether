@@ -29,7 +29,6 @@ MCP servers in Aether use environment variables for configuration.
 | `MCP_TRANSPORT` | Transport mode (`stdio` or `sse`) | `sse` |
 | `PORT` | Port for SSE transport | `8080` |
 | `AETHER_ROOT` | Root directory for the project | `/app` |
-
 ## 4. Running Locally
 To run the Toolsmith MCP server locally in `stdio` mode:
 ```bash
@@ -37,14 +36,55 @@ export MCP_TRANSPORT=stdio
 python3 toolsmith_mcp_server.py
 ```
 
-To run in `sse` mode (for Cloud Run emulation):
-```bash
-export MCP_TRANSPORT=sse
-export PORT=8080
-python3 toolsmith_mcp_server.py
+## 5. Connecting to MCP Clients (How to use as a Tool)
+Project Aether acts as a high-performance MCP server. You can add it to any MCP-compatible client to give your LLM "Aetherial Powers."
+
+### A. Claude Desktop Integration
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "aether-toolsmith": {
+      "command": "python3",
+      "args": ["/absolute/path/to/aether/toolsmith_mcp_server.py"],
+      "env": {
+        "GITHUB_TOKEN": "your_token_here",
+        "AETHER_ROOT": "/absolute/path/to/aether",
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
 ```
 
-## 5. Integrating Claude on Vertex
+### B. Connecting via SSE (Cloud Run)
+If you have deployed Aether to Cloud Run, connect using the SSE transport:
+```json
+{
+  "mcpServers": {
+    "aether-remote": {
+      "url": "https://your-aether-service-url.a.run.app/sse"
+    }
+  }
+}
+```
+
+## 6. Available Tools (What the LLM sees)
+Once connected, Aether provides the following tools to the LLM:
+
+| Tool Name | Practical Usage |
+|-----------|-----------------|
+| `toolsmith_synthesize` | Generates new Python code to fill capability gaps. |
+| `toolsmith_execute` | Securely runs synthesized code in a sandbox. |
+| `router_register` | Registers a new tool with the Agent Router. |
+| `router_route` | Finds the best specialist for a specific task. |
+| `toolsmith_add_memory` | Injects high-signal facts into Aetherial Memory (via Surprise Gate). |
+| `toolsmith_github_sync` | Pushes evolved code directly to your repository. |
+
+## 7. Integrating Claude on Vertex
+...
+
 The Aether swarm uses Claude 3.5 Sonnet on Vertex AI for high-fidelity reasoning.
 
 ```bash

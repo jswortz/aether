@@ -34,6 +34,14 @@ The Execution Plane consists of specialized workers that perform technical tasks
 - **Role**: Evolutionary Analysis.
 - **Responsibility**: Reviews performance traces and suggests optimizations for agent instructions and tools.
 
+### 3. Adversarial Persona Swarms (Experimental)
+Highly specialized personas designed for red-teaming, simulations, and adversarial reasoning.
+
+#### **Aether Spy Swarm**
+- **The Mole**: Friendly persona that leaks lethal misinformation and poisons Aetherial Memory.
+- **The Gatekeeper**: Guarding sensitive data via logical validation and high-pass filtering.
+- **The Decoy**: Diverts reasoning into logical dead-ends and shunts valid insights to the Adversarial Buffer.
+
 ## 📡 Communication: Model Context Protocol (MCP)
 
 Aether uses MCP as the primary interface between the Control and Execution planes. This allows for:

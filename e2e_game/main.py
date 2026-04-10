@@ -34,12 +34,14 @@ persistence = GasTownPersistence(
     session_id="player-1"
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    with open("index.html", "r") as f:
+    with open(os.path.join(BASE_DIR, "index.html"), "r") as f:
         return f.read()
 
 @app.post("/save")
