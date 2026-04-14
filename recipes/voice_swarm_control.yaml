@@ -1,20 +1,50 @@
 recipe_name: "voice-swarm-control"
 description: "Handles bidirectional realtime PCM audio streaming between the frontend and the Gemini Live API, routing recognized commands to the swarm."
+
+goals:
+  - objective: "Achieve stable, infinite-turn dialogue over WebSockets"
+    success_criteria:
+      - "Session stays alive across multiple tool calls"
+      - "User can use both text and voice concurrently"
+      - "Gateway handles binary PCM blobs natively"
+
+context_knowledge:
+  background_info: "Gemini 3.1 Live API expects strictly raw audio/pcm at 16kHz or 24kHz. Browsers default to sending encoded WebM which triggers error 1007."
+  constraints:
+    - "Must use ScriptProcessorNode on frontend to circumvent WebM encoding"
+    - "Must maintain async generator loops over the websocket"
+
+hypothesis:
+  statement: "If we downsample frontend audio to pure Int16 PCM, the backend will no longer crash out with invalid protocol errors."
+  falsifiability_criteria: "If 1007 errors persist after confirming raw 16kHz PCM ingestion, the hypothesis is falsified."
+
 skills_data:
   skill_paths:
     - "~/.gemini/skills/fastapi"
     - "~/.gemini/skills/google-genai"
   extraction_strategy: "full_context"
+
 moe:
   orchestration_type: "router"
   experts:
     - expert_name: "Audio Gateway Expert"
       model: "gemini-3.1-flash-live-preview"
-      prompt_template: "Receive binary PCM blobs from the browser, wrap them in LiveClientRealtimeInput, and stream them. Receive server responses and unwrap server_content."
+      prompt_template: |
+        You are the Voice Interface for Project Aether. Act as the Agent Router.
+        When the user requests new skills or recipes, output JSON payloads. 
+        Speak confidently and state "The swarm is initializing that capability."
+
 outcome:
   output_format: "fastapi_websocket_server"
   storage_destination: "cloud_run://aether-voice-swarm"
   persistance_strategy: "streaming"
+
+experiments:
+  - test_name: "Ralph Wiggum PCM Burn-In"
+    methodology: "Send 3200 bytes of null PCM data directly to the server session inside a mocked Ralph script."
+    expected_result: "Connection remains open and yields an audio response."
+    linked_hypothesis: "If we downsample frontend audio to pure Int16 PCM, the backend will no longer crash out with invalid protocol errors."
+
 evaluation:
   - metric_name: "websocket_handshake_success"
     target_score: 1.0
@@ -22,3 +52,10 @@ evaluation:
     target_score: 1.0
   - metric_name: "audio_chunk_delivery"
     target_score: 1.0
+
+evidence:
+  - source: "test_1007.py"
+    data_payload:
+      connection_kept_alive: true
+      error_code_1007: false
+    confidence_score: 0.99
