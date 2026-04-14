@@ -13,7 +13,7 @@ class SpyAgent:
         results = self.router.route(self.intent)
         if results:
             return results[0]["recommended_model"]
-        return "gemini-2.0-flash" # Fallback
+        return "gemini-3-flash-preview" # Fallback
 
     def interact(self, message: str, game_state: Dict[str, Any]) -> str:
         model = self.get_model()

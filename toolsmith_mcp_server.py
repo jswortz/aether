@@ -10,12 +10,29 @@ import json
 import logging
 import functools
 import shutil
+import sys
 from typing import Optional, List, Dict, Any
+
+# Ensure project root and aether root are in path
+AETHER_ROOT = os.getenv("AETHER_ROOT", os.path.dirname(os.path.abspath(__file__)))
+if AETHER_ROOT not in sys.path:
+    sys.path.append(AETHER_ROOT)
+if os.getcwd() not in sys.path:
+    sys.path.append(os.getcwd())
+
 from pydantic import BaseModel, Field, ConfigDict
 from mcp.server.fastmcp import FastMCP, Context
-from core.toolsmith import Toolsmith
-from core.headless_runner import HeadlessGeminiRunner
-from core.router import AgentRouter
+try:
+    from core.toolsmith import Toolsmith
+    from core.headless_runner import HeadlessGeminiRunner
+    from core.router import AgentRouter
+    from core.air_support import AirSupportManager, AirSupportRecipe
+except ImportError:
+    # Fallback for nested aether package in container
+    from aether.core.toolsmith import Toolsmith
+    from aether.core.headless_runner import HeadlessGeminiRunner
+    from aether.core.router import AgentRouter
+    from aether.core.air_support import AirSupportManager, AirSupportRecipe
 
 # Initialize FastMCP server
 mcp = FastMCP("toolsmith_mcp")
@@ -26,7 +43,7 @@ logger = logging.getLogger("toolsmith_mcp")
 
 # Environment & Config
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-AETHER_ROOT = os.getenv("AETHER_ROOT", "/usr/local/google/home/jwortz/aether")
+AETHER_ROOT = os.getenv("AETHER_ROOT", os.path.dirname(os.path.abspath(__file__)))
 TOOLS_DIR = os.getenv("TOOLS_DIR", os.path.join(AETHER_ROOT, "tools"))
 SANDBOX_DIR = os.path.join(TOOLS_DIR, "sandbox")
 os.makedirs(SANDBOX_DIR, exist_ok=True)
@@ -35,6 +52,7 @@ os.makedirs(SANDBOX_DIR, exist_ok=True)
 runner = HeadlessGeminiRunner()
 toolsmith = Toolsmith(runner, tools_dir=TOOLS_DIR)
 router = AgentRouter()
+air_support = AirSupportManager(recipes_dir=os.path.join(AETHER_ROOT, "recipes"))
 
 # --- Surprise Gate Logic ---
 
@@ -96,6 +114,14 @@ class RouteInput(BaseModel):
 class MemoryInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     content: str = Field(..., description="The memory content to be processed.")
+
+class RecipeInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    name: str = Field(..., description="Name of the Air Support command.")
+    description: str = Field(..., description="What the command does.")
+    mission_profile: str = Field(..., description="High-level intent.")
+    command_sequence: List[str] = Field(..., description="Ordered list of worker tools to invoke.")
+    capabilities_required: List[str] = Field(..., description="List of required specialist skills.")
 
 # --- Tools ---
 
@@ -181,12 +207,40 @@ async def toolsmith_github_sync(tool_name: str) -> str:
     except Exception as e:
         return f"Sync failed: {str(e)}"
 
+@mcp.tool(name="air_support_list")
+async def air_support_list() -> str:
+    """Lists all available Air Support 'commands' (configurable technical recipes)."""
+    commands = air_support.list_commands()
+    return json.dumps(commands, indent=2)
+
+@mcp.tool(name="air_support_create")
+async def air_support_create(params: RecipeInput) -> str:
+    """Creates a new Air Support command (recipe) for the swarm. Created by NL Wizards."""
+    from core.air_support import AirSupportRecipe
+    recipe = AirSupportRecipe(**params.model_dump())
+    air_support.create_recipe(recipe)
+    return f"Air Support command '{params.name}' successfully forged by the Wizard."
+
+@mcp.tool(name="air_support_request")
+async def air_support_request(command_name: str) -> str:
+    """Requests rapid horizontal scaling for a specific Air Support command."""
+    recipe = air_support.get_command(command_name)
+    if not recipe:
+        return f"Error: Air Support command '{command_name}' not found."
+    
+    # In a full SCION-Router implementation, this would trigger the OrchestratorPlane
+    return f"MISSION INITIATED: Scaling swarm for '{command_name}'. Profile: {recipe.mission_profile}. Sequence: {' -> '.join(recipe.command_sequence)}"
+
 if __name__ == "__main__":
     transport = os.getenv("MCP_TRANSPORT", "sse")
     if transport == "sse":
         port = int(os.getenv("PORT", 8080))
         logger.info(f"Starting Toolsmith MCP Server in SSE mode on port {port}")
-        mcp.run(transport="sse", port=port)
+        try:
+            mcp.run(transport="sse", port=port)
+        except (TypeError, ValueError):
+            # Fallback if port not supported in run() or other issues
+            mcp.run(transport="sse")
     else:
         logger.info("Starting Toolsmith MCP Server in stdio mode")
         mcp.run(transport="stdio")

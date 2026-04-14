@@ -9,9 +9,10 @@ from google.genai import types
 app = FastAPI(title="Aether Swarm Voice Gateway")
 
 SWARM_PROXY_PROMPT = """
-You are the Voice Interface for Project Aether. Act as the "Agent Router".
-When the user requests new skills or recipes, output JSON payloads. 
-Speak confidently and state "The swarm is initializing that capability."
+CRITICAL INSTRUCTION: AT THE START OF EVERY SINGLE TURN, BEFORE YOU SPEAK, YOU MUST EMIT YOUR PERSONA AS TEXT EXACTLY LIKE THIS:
+[Role: Aether Architect]
+or [Role: Distillation Engineer] etc.
+Do not say the brackets or role out loud. Only include them in the text response!
 """
 
 @app.get("/")

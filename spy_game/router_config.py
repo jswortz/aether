@@ -13,13 +13,13 @@ def configure_game_router():
         metadata={"domain": "spy_game", "specialty": "creative lying"}
     )
     
-    # Register 'fact checking' intent to prefer Gemini-2.0-Flash
+    # Register 'fact checking' intent to prefer Gemini-3-Flash-Preview
     router.register_tool(
         intent="fact checking",
         tool_name="spy_fact_checker",
         path="/dev/null",
         score=1.0,
-        preferred_model="gemini-2.0-flash",
+        preferred_model="gemini-3-flash-preview",
         metadata={"domain": "spy_game", "specialty": "strict validation"}
     )
 

@@ -24,3 +24,8 @@ packages = ["core"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
+
+[tool.uv.workspace]
+members = [
+    "aether_tuning",
+]

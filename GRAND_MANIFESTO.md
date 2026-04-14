@@ -1,7 +1,9 @@
 # The Grand Unified Manifesto of Aether
 
 ## I. Executive Vision
-Aether is not a chatbot. It is a high-bandwidth, autonomous execution engine designed to operate in the "fifth element"—the connective tissue between disparate tools, memories, and model instances. It is a next-generation agentic framework built on the **SCION (Supervisor-Worker)** pattern. Aether is designed for high-stakes, multi-step autonomous work where human intervention is viewed as a bottleneck to be optimized, not a feature to be celebrated.
+Aether is not a chatbot. It is **Global Air Support for your agent**—a high-bandwidth, autonomous execution engine designed to operate in the "fifth element"—the connective tissue between disparate tools, memories, and model instances. It provides **rapid horizontal scaling** for intensive technical workloads that autonomously evolve and optimize over time.
+
+Built on the **SCION (Supervisor-Worker)** pattern, Aether is a next-generation agentic framework designed for high-stakes, multi-step autonomous work where human intervention is a bottleneck to be optimized, not a feature to be celebrated.
 
 **STOP CHATTING. START ORCHESTRATING.**
 

@@ -1,49 +1,16 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Dockerfile for Aether Voice Swarm Gateway
+FROM python:3.12-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-
-# Install system dependencies
-# git is needed for the toolsmith_github_sync tool
-# node is requested for MCP ecosystem compatibility
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    ca-certificates \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv for fast dependency management
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# Create and set working directory
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
+# Install dependencies
+RUN pip install --no-cache-dir fastapi uvicorn websockets google-genai pydantic
 
-# Install dependencies using uv
-RUN uv pip install --system --no-cache -r requirements.txt
+# Copy the server code
+COPY scripts/fastapi_voice_gateway.py /app/main.py
 
-# Copy the application code
-# We structure it so that 'aether' is a package in the PYTHONPATH (/app)
-COPY . /app/aether/
-
-# Ensure the tools and sandbox directories exist
-RUN mkdir -p /app/aether/tools/sandbox
-
-# Set execution environment variables
-ENV AETHER_ROOT=/app/aether
-ENV TOOLS_DIR=/app/aether/tools
-ENV PORT=8080
-ENV MCP_TRANSPORT=sse
-
-# Expose the port for SSE transport
+# Expose Cloud Run default port
 EXPOSE 8080
 
-# Set the entrypoint to run the MCP server
-ENTRYPOINT ["python", "/app/aether/toolsmith_mcp_server.py"]
+# Start ASGI server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

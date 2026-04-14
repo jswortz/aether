@@ -6,8 +6,11 @@ class AgentRouter:
     """
     High-bandwidth dispatcher that maps semantic intents to worker capabilities.
     """
-    def __init__(self, registry_path: str = "/usr/local/google/home/jwortz/aether/core/router_registry.json"):
-        self.registry_path = registry_path
+    def __init__(self, registry_path: Optional[str] = None):
+        if registry_path is None:
+            self.registry_path = os.path.join(os.path.dirname(__file__), "router_registry.json")
+        else:
+            self.registry_path = registry_path
         self._ensure_registry()
 
     def _ensure_registry(self):
@@ -25,7 +28,7 @@ class AgentRouter:
             "tool_name": tool_name,
             "path": path,
             "wc_score": score,
-            "preferred_model": preferred_model or "gemini-2.0-flash", # Default for general tasks
+            "preferred_model": preferred_model or "gemini-3-flash-preview", # Default for general tasks
             "metadata": metadata or {}
         }
 
@@ -78,8 +81,8 @@ class AgentRouter:
                 # Override preferred model if high-fidelity is needed and not already set
                 recommended_model = entry.get("preferred_model")
                 if needs_offline:
-                    recommended_model = "gemma-4" # Support for offline LLM execution
-                elif needs_high_fidelity and recommended_model == "gemini-2.0-flash":
+                    recommended_model = "vertex_endpoint:3351577523275169792" # Aether Gemma 4 Expert
+                elif needs_high_fidelity and recommended_model == "gemini-3-flash-preview":
                     recommended_model = "claude-3-5-sonnet-v2" # Upgrade for complex tasks
 
                 if force_model:
@@ -94,9 +97,9 @@ class AgentRouter:
                 # If MoE is triggered, attach the MoE Recipe metadata
                 if trigger_moe:
                     result_entry["recipe"] = "high_temp_moe"
-                    result_entry["moe_models"] = ["claude-3-5-sonnet-v2", "gemini-2.0-flash", "gemini-2.5-pro"]
+                    result_entry["moe_models"] = ["claude-3-5-sonnet-v2", "gemini-3-flash-preview"]
                     if needs_offline:
-                        result_entry["moe_models"].append("gemma-4")
+                        result_entry["moe_models"].append("vertex_endpoint:3351577523275169792")
 
                 scored_results.append(result_entry)
         

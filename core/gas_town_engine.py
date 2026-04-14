@@ -18,6 +18,14 @@ class GasTownEngine:
         self.session_id = session_id
         self.judge = judge or Judge()
         self.state_file = f"state/{session_id}/engine_state.json"
+        
+        from google.cloud import storage
+        try:
+            self.storage_client = storage.Client()
+        except:
+            # Fallback if no credentials or default project is missing, helpful for local testing
+            self.storage_client = None
+
         self.state = {
             "epoch": 0,
             "session_id": session_id,
@@ -29,49 +37,51 @@ class GasTownEngine:
         logging.basicConfig(level=logging.INFO)
 
     def _gsutil_cmd(self, cmd: List[str]):
-        """Helper to run gsutil commands."""
-        full_cmd = ["gsutil"] + cmd
-        try:
-            subprocess.run(full_cmd, check=True, capture_output=True, text=True)
-            return True
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"gsutil command failed: {e.stderr}")
-            return False
+        # DEPRECATED/REMOVED: using google.cloud.storage instead
+        pass
 
     def checkpoint(self):
         """
         Saves the current engine state to GCS.
-        This is the 'Checkpoint' part of the Gas Town protocol.
         """
         self.state["last_checkpoint"] = time.time()
-        local_path = f"/tmp/state_{self.session_id}.json"
         
-        with open(local_path, "w") as f:
-            json.dump(self.state, f)
+        self.logger.info(f"Checkpointing state to gs://{self.state_bucket}/{self.state_file}")
+        
+        if not self.storage_client:
+            self.logger.warning("No GCS client available. Checkpoint skipped.")
+            return False
             
-        gcs_path = f"gs://{self.state_bucket}/{self.state_file}"
-        self.logger.info(f"Checkpointing state to {gcs_path}")
-        
-        if self._gsutil_cmd(["cp", local_path, gcs_path]):
+        try:
+            bucket = self.storage_client.bucket(self.state_bucket)
+            blob = bucket.blob(self.state_file)
+            blob.upload_from_string(json.dumps(self.state), content_type="application/json")
             self.logger.info("Checkpoint successful.")
             return True
-        return False
+        except Exception as e:
+            self.logger.error(f"GCS checkpoint failed: {e}")
+            return False
 
     def resurrect(self) -> bool:
         """
         Loads the engine state from GCS, effectively resurrecting the session.
-        This allows the agent to pick up where it left off on a different instance.
         """
-        gcs_path = f"gs://{self.state_bucket}/{self.state_file}"
-        local_path = f"/tmp/resurrect_{self.session_id}.json"
+        self.logger.info(f"Attempting resurrection from gs://{self.state_bucket}/{self.state_file}")
         
-        self.logger.info(f"Attempting resurrection from {gcs_path}")
-        
-        if self._gsutil_cmd(["cp", gcs_path, local_path]):
-            with open(local_path, "r") as f:
-                self.state = json.load(f)
-            self.logger.info(f"Resurrection complete. Resuming from epoch {self.state['epoch']}")
-            return True
+        if not self.storage_client:
+            self.logger.warning("No GCS client available. Resurrection skipped.")
+            return False
+            
+        try:
+            bucket = self.storage_client.bucket(self.state_bucket)
+            blob = bucket.blob(self.state_file)
+            if blob.exists():
+                data = blob.download_as_string()
+                self.state = json.loads(data)
+                self.logger.info(f"Resurrection complete. Resuming from epoch {self.state['epoch']}")
+                return True
+        except Exception as e:
+            self.logger.error(f"Resurrection failed: {e}")
         
         self.logger.warning("Resurrection failed or no previous state found. Starting fresh.")
         return False

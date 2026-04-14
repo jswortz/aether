@@ -36,8 +36,8 @@ for i in "${!SERVICES[@]}"; do
         --allow-unauthenticated \
         --port "${PORT}" \
         --command "python3" \
-        --args "${ENTRYPOINT}" \
-        --set-env-vars "AETHER_ROOT=/app,TOOLS_DIR=/app/tools,PYTHONPATH=/app,MCP_TRANSPORT=sse,PORT=${PORT}" \
+        --args "/app/aether/${ENTRYPOINT}" \
+        --set-env-vars "AETHER_ROOT=/app/aether,TOOLS_DIR=/app/aether/tools,PYTHONPATH=/app:/app/aether,MCP_TRANSPORT=sse" \
         --memory 2Gi \
         --cpu 1
     

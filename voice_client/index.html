@@ -11,8 +11,17 @@
         #chat-container { display: flex; flex-direction: column; flex: 1; margin-top: 1rem; overflow: hidden; background: #000; border: 1px solid #333; }
         #logs { flex: 1; padding: 1rem; overflow-y: auto; text-align: left; }
         .messageRow { margin: 0.5rem 0; padding: 0.5rem; border-radius: 5px; max-width: 80%; }
-        .userMsg { background: #0a4a0a; color: #fff; margin-left: auto; text-align: right; }
-        .modelMsg { background: #333; color: #0f0; margin-right: auto; text-align: left; }
+        .userMsg { background: #0a4a0a; color: #fff; margin-left: auto; text-align: right; border-left: 5px solid #0f0; }
+        .modelMsg { background: #222; color: #bbb; margin-right: auto; text-align: left; }
+        
+        /* Agent Colors */
+        .agent-architect { border-left: 5px solid #f0f; color: #f0f; }
+        .agent-security { border-left: 5px solid #f00; color: #f00; }
+        .agent-researcher { border-left: 5px solid #0ff; color: #0ff; }
+        .agent-default { border-left: 5px solid #fa0; color: #fa0; }
+
+        .agentLabel { font-weight: bold; font-size: 0.8rem; margin-bottom: 0.2rem; text-transform: uppercase; }
+
         #input-area { display: flex; padding: 1rem; background: #111; border-top: 1px solid #333;}
         #text-input { flex: 1; padding: 0.5rem; background: #222; color: #0f0; border: 1px solid #0f0; margin-right: 1rem; font-family: monospace; font-size: 1rem;}
         #btn-send { background: #0f0; color: #111; padding: 0.5rem 1rem; font-weight: bold;}
@@ -23,7 +32,7 @@
     <h2 id="status">Status: 🔴 OFFLINE</h2>
     
     <div>
-        <button id="btn-start">CONNECT LIVE & ENABLE MIC</button>
+        <button id="btn-start">CONNECT SWARM & ENABLE MIC</button>
         <button id="btn-stop" style="display:none; background: #f00;">SEVER CONNECTION</button>
     </div>
 
@@ -41,6 +50,10 @@
         let audioContext = null;
         let stream = null;
         let nextTime = 0;
+        let speechRecognizer = null;
+
+        let globalSource = null;
+        let globalProcessor = null;
 
         const logDiv = document.getElementById('logs');
         const statusDiv = document.getElementById('status');
@@ -49,12 +62,72 @@
         const textInput = document.getElementById('text-input');
         const btnSend = document.getElementById('btn-send');
 
-        function appendMessage(role, msg) {
+        function appendMessage(role, msg, agentName="Aether Core") {
             const row = document.createElement('div');
             row.className = 'messageRow ' + (role === 'user' ? 'userMsg' : 'modelMsg');
-            row.innerText = msg;
+            
+            if (role === 'model') {
+                const label = document.createElement('div');
+                label.className = 'agentLabel';
+                label.innerText = agentName;
+                row.appendChild(label);
+
+                // Assign color based on agent name
+                if (agentName.toLowerCase().includes('architect')) row.classList.add('agent-architect');
+                else if (agentName.toLowerCase().includes('security')) row.classList.add('agent-security');
+                else if (agentName.toLowerCase().includes('research')) row.classList.add('agent-researcher');
+                else row.classList.add('agent-default');
+            }
+
+            const content = document.createElement('div');
+            content.innerText = msg;
+            row.appendChild(content);
+
             logDiv.appendChild(row);
             logDiv.scrollTop = logDiv.scrollHeight;
+            return { row, content };
+        }
+
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window)) return;
+            speechRecognizer = new webkitSpeechRecognition();
+            speechRecognizer.continuous = true;
+            speechRecognizer.interimResults = true;
+            
+            let currentUserBubble = null;
+
+            speechRecognizer.onresult = (event) => {
+                // Prevent agent TTS from echoing into the user's transcript!
+                if (audioContext && nextTime > audioContext.currentTime) {
+                    return;
+                }
+
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                if (finalTranscript || interimTranscript) {
+                    if (!currentUserBubble) {
+                        const b = appendMessage("user", "");
+                        currentUserBubble = b;
+                    }
+                    currentUserBubble.content.innerText = finalTranscript + interimTranscript;
+                }
+
+                if (finalTranscript) {
+                    currentUserBubble = null;
+                }
+            };
+
+            speechRecognizer.onerror = (e) => { console.log("Speech recognition error", e); };
+            speechRecognizer.start();
         }
 
         async function start() {
@@ -71,10 +144,13 @@
                     btnStop.style.display = "inline-block";
                     textInput.disabled = false;
                     btnSend.disabled = false;
-                    appendMessage("model", "🔌 Connected to Swarm Voice Gateway.");
+                    initSpeechRecognition();
+                    appendMessage("model", "Connected to Swarm Voice Gateway.", "System");
                 };
 
                 let currentModelMessage = null;
+                let currentModelContent = null;
+                let currentModelAgent = "Aether Core";
 
                 ws.onmessage = async (event) => {
                     if (event.data instanceof Blob) {
@@ -101,21 +177,33 @@
                     } else if (typeof event.data === "string") {
                         try {
                             const data = JSON.parse(event.data);
-                            if (data.type === "text") {
-                                if (!currentModelMessage) {
-                                    currentModelMessage = document.createElement('div');
-                                    currentModelMessage.className = 'messageRow modelMsg';
-                                    logDiv.appendChild(currentModelMessage);
+                            if (data.type === "agent_call") {
+                                currentModelAgent = data.agent_name;
+                                currentModelMessage = null; 
+                                appendMessage("model", "(Swarm Persona Switched: " + data.agent_name + ")", data.agent_name);
+                            } else if (data.type === "text") {
+                                // Agent color coding detection [Role: Architect]
+                                let txt = data.text;
+                                const roleMatch = txt.match(/\[Role:\s*(.*?)\]/i);
+                                if (roleMatch) {
+                                    currentModelAgent = roleMatch[1];
+                                    txt = txt.replace(roleMatch[0], '').trim();
+                                    currentModelMessage = null; // Force new bubble for new agent
                                 }
-                                currentModelMessage.innerText += data.text;
+                                
+                                if (!currentModelMessage) {
+                                    const b = appendMessage("model", "", currentModelAgent);
+                                    currentModelMessage = b.row;
+                                    currentModelContent = b.content;
+                                }
+                                currentModelContent.innerText += txt;
                                 logDiv.scrollTop = logDiv.scrollHeight;
                             } else if (data.type === "turn_complete") {
-                                currentModelMessage = null; // Next text creates new bubble
-                            } else if (data.type === "error") {
-                                appendMessage("model", "❌ Error: " + data.message);
+                                currentModelMessage = null; 
+                                currentModelAgent = "Aether Core";
                             }
                         } catch(e) {
-                            appendMessage("model", event.data);
+                            appendMessage("model", event.data, "System");
                         }
                     }
                 };
@@ -126,18 +214,19 @@
                     btnStop.style.display = "none";
                     textInput.disabled = true;
                     btnSend.disabled = true;
-                    appendMessage("model", "🔌 Disconnected.");
+                    if (speechRecognizer) speechRecognizer.stop();
+                    appendMessage("model", "Disconnected.", "System");
                 };
 
                 stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
                 
-                const source = audioContext.createMediaStreamSource(stream);
-                const processor = audioContext.createScriptProcessor(4096, 1, 1);
+                globalSource = audioContext.createMediaStreamSource(stream);
+                globalProcessor = audioContext.createScriptProcessor(4096, 1, 1);
                 
-                source.connect(processor);
-                processor.connect(audioContext.destination); 
+                globalSource.connect(globalProcessor);
+                globalProcessor.connect(audioContext.destination); 
                 
-                processor.onaudioprocess = (e) => {
+                globalProcessor.onaudioprocess = (e) => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         const floatData = e.inputBuffer.getChannelData(0);
                         const pcmData = new Int16Array(floatData.length);
@@ -145,14 +234,12 @@
                             const s = Math.max(-1, Math.min(1, floatData[i]));
                             pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
                         }
-                        ws.send(pcmData.buffer); // Binary payload for audio
+                        ws.send(pcmData.buffer); 
                     }
                 };
                 
-                appendMessage("model", "🎙️ Listening (Raw PCM)...");
-                
             } catch (err) {
-                appendMessage("model", "❌ Error: " + err);
+                appendMessage("model", "Error: " + err, "System");
             }
         }
 
@@ -160,6 +247,7 @@
             if (stream) stream.getTracks().forEach(t => t.stop());
             if (ws) ws.close();
             if (audioContext) audioContext.close();
+            if (speechRecognizer) speechRecognizer.stop();
             audioContext = null;
         }
 

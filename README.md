@@ -1,10 +1,18 @@
-# 🪐 Project Aether: The SCION-MCP Orchestration Swarm
+# 🪐 Project Aether: Global Air Support for Your Agent
 
 **STOP CHATTING. START ORCHESTRATING.**
 
-Aether is a next-generation agentic framework designed for high-stakes, multi-step autonomous work. Inspired by Steve Yegge's vision of ["Gas Town"](https://steve-yegge.medium.com/welcome-to-gas-town-24ca60d29f86), Aether operates as a persistent, autonomous factory that evolves its own capabilities and optimizes its own performance.
+Aether is a next-generation agentic framework designed for high-stakes, multi-step autonomous work. It acts as **Global Air Support for your agent**—providing rapid horizontal scaling for intensive technical workloads that evolve and optimize over time.
 
-## 🏛️ The Aether Architecture
+## 🚀 The Aether Advantage
+
+- **Rapid Horizontal Scaling**: Dynamically spin up a serverless technical swarm to handle massive builds, complex refactors, and exhaustive security audits.
+- **Self-Evolving Technical Swarm**: Aether identifies its own capability gaps and synthesizes new tools on-the-fly via the **Toolsmith**.
+- **Open & Flexible**: Designed to integrate seamlessly with any agentic stack via **MCP (Model Context Protocol)**.
+- **Stochastic Optimization**: Uses High-Temp Mixture of Experts (MoE) and statistical validation to ensure high-fidelity outcomes.
+
+## 🏛️ Architecture: The SCION-Router Pattern
+...
 
 Aether strictly separates the **Control Plane** (Strategic Brain) from the **Execution Plane** (Technical Swarm) using the **SCION (Supervisor-Worker)** pattern and **Model Context Protocol (MCP)**.
 
