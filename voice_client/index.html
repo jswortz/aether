@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Swarm Voice Gateway</title>
+    <style>
+        body { background: #111; color: #0f0; font-family: monospace; padding: 2rem; display: flex; flex-direction: column; height: 100vh; margin: 0; box-sizing: border-box;}
+        h1, h2 { margin: 0.5rem 0; }
+        button { background: #0f0; color: #111; padding: 1rem; border: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
+        #chat-container { display: flex; flex-direction: column; flex: 1; margin-top: 1rem; overflow: hidden; background: #000; border: 1px solid #333; }
+        #logs { flex: 1; padding: 1rem; overflow-y: auto; text-align: left; }
+        .messageRow { margin: 0.5rem 0; padding: 0.5rem; border-radius: 5px; max-width: 80%; }
+        .userMsg { background: #0a4a0a; color: #fff; margin-left: auto; text-align: right; }
+        .modelMsg { background: #333; color: #0f0; margin-right: auto; text-align: left; }
+        #input-area { display: flex; padding: 1rem; background: #111; border-top: 1px solid #333;}
+        #text-input { flex: 1; padding: 0.5rem; background: #222; color: #0f0; border: 1px solid #0f0; margin-right: 1rem; font-family: monospace; font-size: 1rem;}
+        #btn-send { background: #0f0; color: #111; padding: 0.5rem 1rem; font-weight: bold;}
+    </style>
+</head>
+<body>
+    <h1>Aether Swarm Voice Interface</h1>
+    <h2 id="status">Status: 🔴 OFFLINE</h2>
+    
+    <div>
+        <button id="btn-start">CONNECT LIVE & ENABLE MIC</button>
+        <button id="btn-stop" style="display:none; background: #f00;">SEVER CONNECTION</button>
+    </div>
+
+    <div id="chat-container">
+        <div id="logs"></div>
+        <div id="input-area">
+            <input type="text" id="text-input" placeholder="Type messages to the orchestrator..." disabled />
+            <button id="btn-send" disabled>SEND</button>
+        </div>
+    </div>
+
+    <script>
+        const GATEWAY_WS_URL = "wss://aether-voice-swarm-in2bk2mdwa-ue.a.run.app/ws/voice";
+        let ws = null;
+        let audioContext = null;
+        let stream = null;
+        let nextTime = 0;
+
+        const logDiv = document.getElementById('logs');
+        const statusDiv = document.getElementById('status');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const textInput = document.getElementById('text-input');
+        const btnSend = document.getElementById('btn-send');
+
+        function appendMessage(role, msg) {
+            const row = document.createElement('div');
+            row.className = 'messageRow ' + (role === 'user' ? 'userMsg' : 'modelMsg');
+            row.innerText = msg;
+            logDiv.appendChild(row);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function start() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+                nextTime = 0;
+
+                ws = new WebSocket(GATEWAY_WS_URL);
+                ws.binaryType = "blob";
+
+                ws.onopen = () => {
+                    statusDiv.innerText = "Status: 🟢 ONLINE";
+                    btnStart.style.display = "none";
+                    btnStop.style.display = "inline-block";
+                    textInput.disabled = false;
+                    btnSend.disabled = false;
+                    appendMessage("model", "🔌 Connected to Swarm Voice Gateway.");
+                };
+
+                let currentModelMessage = null;
+
+                ws.onmessage = async (event) => {
+                    if (event.data instanceof Blob) {
+                        const arrayBuffer = await event.data.arrayBuffer();
+                        const int16Array = new Int16Array(arrayBuffer);
+                        const float32Array = new Float32Array(int16Array.length);
+                        for (let i = 0; i < int16Array.length; i++) {
+                             float32Array[i] = int16Array[i] / 32768.0;
+                        }
+                        
+                        if (audioContext) {
+                            const buffer = audioContext.createBuffer(1, float32Array.length, 24000);
+                            buffer.getChannelData(0).set(float32Array);
+                            const source = audioContext.createBufferSource();
+                            source.buffer = buffer;
+                            source.connect(audioContext.destination);
+                            
+                            if (nextTime < audioContext.currentTime) {
+                                nextTime = audioContext.currentTime;
+                            }
+                            source.start(nextTime);
+                            nextTime += buffer.duration;
+                        }
+                    } else if (typeof event.data === "string") {
+                        try {
+                            const data = JSON.parse(event.data);
+                            if (data.type === "text") {
+                                if (!currentModelMessage) {
+                                    currentModelMessage = document.createElement('div');
+                                    currentModelMessage.className = 'messageRow modelMsg';
+                                    logDiv.appendChild(currentModelMessage);
+                                }
+                                currentModelMessage.innerText += data.text;
+                                logDiv.scrollTop = logDiv.scrollHeight;
+                            } else if (data.type === "turn_complete") {
+                                currentModelMessage = null; // Next text creates new bubble
+                            } else if (data.type === "error") {
+                                appendMessage("model", "❌ Error: " + data.message);
+                            }
+                        } catch(e) {
+                            appendMessage("model", event.data);
+                        }
+                    }
+                };
+
+                ws.onclose = () => {
+                    statusDiv.innerText = "Status: 🔴 OFFLINE";
+                    btnStart.style.display = "inline-block";
+                    btnStop.style.display = "none";
+                    textInput.disabled = true;
+                    btnSend.disabled = true;
+                    appendMessage("model", "🔌 Disconnected.");
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, sampleRate: 16000 } });
+                
+                const source = audioContext.createMediaStreamSource(stream);
+                const processor = audioContext.createScriptProcessor(4096, 1, 1);
+                
+                source.connect(processor);
+                processor.connect(audioContext.destination); 
+                
+                processor.onaudioprocess = (e) => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        const floatData = e.inputBuffer.getChannelData(0);
+                        const pcmData = new Int16Array(floatData.length);
+                        for (let i = 0; i < floatData.length; i++) {
+                            const s = Math.max(-1, Math.min(1, floatData[i]));
+                            pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                        }
+                        ws.send(pcmData.buffer); // Binary payload for audio
+                    }
+                };
+                
+                appendMessage("model", "🎙️ Listening (Raw PCM)...");
+                
+            } catch (err) {
+                appendMessage("model", "❌ Error: " + err);
+            }
+        }
+
+        function stop() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            if (ws) ws.close();
+            if (audioContext) audioContext.close();
+            audioContext = null;
+        }
+
+        function sendText() {
+            const txt = textInput.value.trim();
+            if (txt && ws && ws.readyState === WebSocket.OPEN) {
+                appendMessage("user", txt);
+                ws.send(JSON.stringify({ type: "client_content", text: txt }));
+                textInput.value = "";
+            }
+        }
+
+        btnStart.addEventListener('click', start);
+        btnStop.addEventListener('click', stop);
+        btnSend.addEventListener('click', sendText);
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendText();
+        });
+    </script>
+</body>
+</html>

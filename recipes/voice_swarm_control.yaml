@@ -1,0 +1,24 @@
+recipe_name: "voice-swarm-control"
+description: "Handles bidirectional realtime PCM audio streaming between the frontend and the Gemini Live API, routing recognized commands to the swarm."
+skills_data:
+  skill_paths:
+    - "~/.gemini/skills/fastapi"
+    - "~/.gemini/skills/google-genai"
+  extraction_strategy: "full_context"
+moe:
+  orchestration_type: "router"
+  experts:
+    - expert_name: "Audio Gateway Expert"
+      model: "gemini-3.1-flash-live-preview"
+      prompt_template: "Receive binary PCM blobs from the browser, wrap them in LiveClientRealtimeInput, and stream them. Receive server responses and unwrap server_content."
+outcome:
+  output_format: "fastapi_websocket_server"
+  storage_destination: "cloud_run://aether-voice-swarm"
+  persistance_strategy: "streaming"
+evaluation:
+  - metric_name: "websocket_handshake_success"
+    target_score: 1.0
+  - metric_name: "live_api_connect_success"
+    target_score: 1.0
+  - metric_name: "audio_chunk_delivery"
+    target_score: 1.0
