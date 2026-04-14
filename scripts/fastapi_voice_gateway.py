@@ -46,33 +46,34 @@ async def websocket_endpoint(websocket: WebSocket):
             
             async def receive_from_gemini():
                 try:
-                    async for response in session.receive():
-                        server_content = getattr(response, "server_content", None)
-                        if server_content is not None:
-                            model_turn = getattr(server_content, "model_turn", None)
-                            if model_turn is not None:
-                                for part in model_turn.parts:
-                                    if getattr(part, "inline_data", None): 
-                                        await websocket.send_bytes(part.inline_data.data)
-                                    if getattr(part, "text", None):
-                                        import json
-                                        await websocket.send_text(json.dumps({"type": "text", "text": part.text}))
-                            if getattr(server_content, "turn_complete", False):
-                                import json
-                                await websocket.send_text(json.dumps({"type": "turn_complete"}))
-                                
-                        if getattr(response, "tool_call", None):
-                            print(f"Executing Aether Swarm Tool: {response.tool_call}", flush=True)
-                            for function_call in response.tool_call.function_calls:
-                                await session.send_tool_response(
-                                    function_responses=[
-                                        types.FunctionResponse(
-                                            id=function_call.id,
-                                            name=function_call.name, 
-                                            response={"status": "dispatched"}
-                                        )
-                                    ]
-                                )
+                    while True:
+                        async for response in session.receive():
+                            server_content = getattr(response, "server_content", None)
+                            if server_content is not None:
+                                model_turn = getattr(server_content, "model_turn", None)
+                                if model_turn is not None:
+                                    for part in model_turn.parts:
+                                        if getattr(part, "inline_data", None): 
+                                            await websocket.send_bytes(part.inline_data.data)
+                                        if getattr(part, "text", None):
+                                            import json
+                                            await websocket.send_text(json.dumps({"type": "text", "text": part.text}))
+                                if getattr(server_content, "turn_complete", False):
+                                    import json
+                                    await websocket.send_text(json.dumps({"type": "turn_complete"}))
+                                    
+                            if getattr(response, "tool_call", None):
+                                print(f"Executing Aether Swarm Tool: {response.tool_call}", flush=True)
+                                for function_call in response.tool_call.function_calls:
+                                    await session.send_tool_response(
+                                        function_responses=[
+                                            types.FunctionResponse(
+                                                id=function_call.id,
+                                                name=function_call.name, 
+                                                response={"status": "dispatched"}
+                                            )
+                                        ]
+                                    )
                 except asyncio.CancelledError:
                     print("DEBUG: receive_from_gemini cancelled.", flush=True)
                 except Exception as ex:

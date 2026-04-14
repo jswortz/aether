@@ -45,7 +45,7 @@
     </div>
 
     <script>
-        const GATEWAY_WS_URL = "wss://aether-voice-swarm-in2bk2mdwa-ue.a.run.app/ws/voice";
+        const GATEWAY_WS_URL = "wss://aether-voice-swarm-679926387543.us-east1.run.app/ws/voice";
         let ws = null;
         let audioContext = null;
         let stream = null;
@@ -122,6 +122,9 @@
                 }
 
                 if (finalTranscript) {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "client_turn_complete" }));
+                    }
                     currentUserBubble = null;
                 }
             };
@@ -227,6 +230,11 @@
                 globalProcessor.connect(audioContext.destination); 
                 
                 globalProcessor.onaudioprocess = (e) => {
+                    // Prevent echoing the Agent's TTS into the microphone stream
+                    if (audioContext && nextTime > audioContext.currentTime) {
+                        return; // Send precisely NO audio frames while agent speaks
+                    }
+
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         const floatData = e.inputBuffer.getChannelData(0);
                         const pcmData = new Int16Array(floatData.length);
